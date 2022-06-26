@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
+	"html/template"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,12 +14,24 @@ type UserList struct {
 	PassWord int    `json:"password"`
 }
 
+func unixToTime(timestamp int) string {
+	fmt.Println(timestamp)
+	t := time.Unix(int64(timestamp), 0)
+	return t.Format("2006-01-02 15:04:05")
+}
+
 func main() {
 	r := gin.Default()
-	// 配置模板文件
+	/** 必须反正r.LoadHTMLGlob之前 */
+	r.SetFuncMap(template.FuncMap{
+		"unixToTime": unixToTime,
+	})
+	/** 配置模板文件 */
 	// r.LoadHTMLGlob("template/*") // 一层目录
 	r.LoadHTMLGlob("template/**/*") // 二层目录
 
+	/** 设置静态资源目录 */
+	r.Static("/assets", "./static")
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"name": "张三",
@@ -75,6 +90,7 @@ func main() {
 	r.GET("/home", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "home/index.html", gin.H{
 			"title": "首页数据",
+			"time":  1656233903,
 		})
 	})
 	r.GET("/home/goods", func(c *gin.Context) {
