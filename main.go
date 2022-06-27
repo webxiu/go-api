@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/xml"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -10,8 +11,12 @@ import (
 )
 
 type UserList struct {
-	UserName string `json:"username"`
-	PassWord int    `json:"password"`
+	UserName string `json:"username" form:"username"`
+	PassWord string `json:"password" form:"password"` // 获取表单数据
+}
+type XMLType struct {
+	UserName string `json:"username" xml:"username"`
+	PassWord string `json:"password" xml:"password"` // 获取表单数据
 }
 
 func unixToTime(timestamp int) string {
@@ -32,58 +37,55 @@ func main() {
 
 	/** 设置静态资源目录 */
 	r.Static("/assets", "./static")
+
 	r.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"name": "张三",
+		page := c.Query("page")
+		pageSize := c.DefaultQuery("pageSize", "10")
+		c.JSON(http.StatusOK, gin.H{
+			"name":     "张三",
+			"page":     page,
+			"pageSize": pageSize,
 		})
 	})
-	r.GET("/string", func(c *gin.Context) {
-		c.String(http.StatusOK, "这是返回的字符串")
+	// 1.获取参数
+	r.POST("/post", func(c *gin.Context) {
+		username := c.PostForm("username") // 获取表单提交值
+		pageSize := c.DefaultPostForm("pageSize", "10")
+		c.JSON(http.StatusOK, gin.H{
+			"name":     "张三",
+			"username": username,
+			"pageSize": pageSize,
+		})
 	})
-	r.GET("/struct", func(c *gin.Context) {
-		result := &UserList{
-			UserName: "李四",
-			PassWord: 44,
+	// 2.GET或者POST绑定结构体返回数据, 写法一样
+	r.GET("/get-struct", func(c *gin.Context) {
+		userInfo := &UserList{}
+		if err := c.ShouldBind(&userInfo); err == nil {
+			c.JSON(http.StatusOK, userInfo)
+		} else {
+			c.JSON(http.StatusOK, gin.H{
+				"error": err.Error(),
+			})
 		}
-		c.JSON(200, result)
 	})
-	r.GET("/map", func(c *gin.Context) {
-		c.JSON(200, map[string]interface{}{
-			"name": "张三ping",
-			"age":  19,
-		})
-	})
-	r.GET("/jsonp", func(c *gin.Context) {
-		// http://localhost:8080/jsonp?callback=cb
-		c.JSONP(200, map[string]interface{}{
-			"name": "张三-jsonp",
-			"age":  19,
-		})
-	})
+	// 3.解析XML数据, 使用 raw 提交xml 格式的数据
+	r.GET("/get-xml", func(c *gin.Context) {
+		xmlInfo := &XMLType{}
+		xmlSliceData, _ := c.GetRawData() // 获取c.Request.Body中的数据
+		fmt.Println(xmlSliceData)
 
-	r.GET("/xml", func(c *gin.Context) {
-		c.XML(http.StatusOK, gin.H{
-			"success": true,
-			"msg":     "返回 xml 数据",
-		})
-	})
-
-	// 1.只能使用r.LoadHTMLGlob("template/*")的模板配置
-	r.GET("/tpl-news", func(c *gin.Context) {
-		info := &UserList{
-			UserName: "李四",
-			PassWord: 44,
+		if err := xml.Unmarshal(xmlSliceData, &xmlInfo); err == nil {
+			c.JSON(http.StatusOK, xmlInfo)
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
 		}
-		c.HTML(http.StatusOK, "/news.html", gin.H{
-			"title": "模板数据news",
-			"info":  info,
-		})
 	})
-	// 只能使用r.LoadHTMLGlob("template/*")的模板配置
-	r.GET("/tpl-goods", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "/goods.html", gin.H{
-			"title": "模板数据goods",
-		})
+	// 动态路由
+	r.GET("/list/:cid", func(c *gin.Context) {
+		cid := c.Param("cid")
+		c.String(200, "%v", cid)
 	})
 
 	// 2.多文件夹r.LoadHTMLGlob("template/**/*")模板配置
@@ -96,34 +98,6 @@ func main() {
 	r.GET("/home/goods", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "home/goods.html", gin.H{
 			"title": "首页数据goods",
-		})
-	})
-	r.GET("/admin", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "admin/index.html", gin.H{
-			"title": "后台数据index",
-		})
-	})
-	r.GET("/admin/news", func(c *gin.Context) {
-		info := &UserList{
-			UserName: "新闻页面",
-			PassWord: 88,
-		}
-		c.HTML(http.StatusOK, "admin/news.html", gin.H{
-			"title": "后台数据news",
-			"info":  info,
-			"hobby": []string{"吃饭", "睡觉", "打豆豆"},
-			"newsList": []interface{}{
-				&UserList{
-					UserName: "新闻页面111",
-					PassWord: 1111,
-				}, &UserList{
-					UserName: "新闻页面222",
-					PassWord: 2222,
-				}, &UserList{
-					UserName: "新闻页面333",
-					PassWord: 3333,
-				},
-			},
 		})
 	})
 	r.Run() // r.Run(":8000") 默认端口:8080
