@@ -28,9 +28,9 @@ func main() {
 	/** 设置静态资源目录 */
 	r.Static("/assets", "./static")
 
-	routers.AdminRouters(r)
 	routers.ApiRouters(r)
-	routers.DefaultRouters(r)
+	routers.AdminRouters(r)
+	routers.HomeRouters(r)
 
 	r.Run() // r.Run(":8000") 默认端口:8080
 }
