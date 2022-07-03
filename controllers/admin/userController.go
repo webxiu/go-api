@@ -34,6 +34,13 @@ func (con UserController) Index(c *gin.Context) {
 }
 func (con UserController) List(c *gin.Context) {
 	cid := c.Param("cid")
+	username, _ := c.Get("username")
+	v, ok := username.(string)
+	if ok {
+		fmt.Printf("list, 中间件数据为:" + v + "\n")
+	} else {
+		fmt.Printf("list, 失败")
+	}
 	// c.String(200, "%v", cid)
 	con.Error(c, cid)
 }

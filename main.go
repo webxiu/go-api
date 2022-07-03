@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"gin-api/middlewares"
 	routers "gin-api/router"
 	"html/template"
 	"time"
@@ -16,8 +17,8 @@ func unixToTime(timestamp int) string {
 }
 
 func main() {
-	r := gin.Default()
-	/** 必须反正r.LoadHTMLGlob之前 */
+	r := gin.Default() // gin.New() 创建一个新的路由, 不使用默认的日制等配置
+	/** 必须放在r.LoadHTMLGlob之前 */
 	r.SetFuncMap(template.FuncMap{
 		"unixToTime": unixToTime,
 	})
@@ -27,6 +28,9 @@ func main() {
 
 	/** 设置静态资源目录 */
 	r.Static("/assets", "./static")
+
+	// 全局中间件
+	r.Use(middlewares.Middleware{}.Middleware1, middlewares.Middleware{}.Middleware2)
 
 	routers.ApiRouters(r)
 	routers.AdminRouters(r)
