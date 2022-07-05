@@ -27,6 +27,7 @@ func main() {
 	routers.ApiRouters(r)
 	routers.AdminRouters(r)
 	routers.HomeRouters(r)
+	routers.UploadRouters(r)
 
 	r.Run() // r.Run(":8000") 默认端口:8080
 }
