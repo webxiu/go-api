@@ -30,7 +30,7 @@ func (con UserController) Index(c *gin.Context) {
 	cid := c.Param("cid")
 	// c.String(200, "%v", cid)
 	// con.success(c, cid)
-	con.Success(c, cid)
+	con.Success(c, "成功了", cid)
 }
 func (con UserController) List(c *gin.Context) {
 	cid := c.Param("cid")
@@ -42,11 +42,11 @@ func (con UserController) List(c *gin.Context) {
 		fmt.Printf("list, 失败")
 	}
 	// c.String(200, "%v", cid)
-	con.Error(c, cid)
+	con.Error(c, 400, "参数错误"+cid)
 }
 func (con UserController) TestSuccess(c *gin.Context) {
 	cid := c.Param("cid")
-	con.success(c, cid)
+	con.success(c, "成功了"+cid)
 }
 func (con UserController) TestError(c *gin.Context) {
 	cid := c.Param("cid")

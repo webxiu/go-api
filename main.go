@@ -2,6 +2,7 @@ package main
 
 import (
 	"gin-api/middlewares"
+	"gin-api/mysql"
 	"gin-api/routers"
 	"gin-api/utils"
 
@@ -11,6 +12,10 @@ import (
 )
 
 func main() {
+	// ==连接数据库
+	mysql.Connect()
+
+	// ==创建路由
 	r := gin.Default() // gin.New() 创建一个新的路由, 不使用默认的日制等配置
 	/** 必须放在r.LoadHTMLGlob之前 */
 	r.SetFuncMap(template.FuncMap{"unixToTime": utils.UnixToTime})
@@ -23,11 +28,11 @@ func main() {
 
 	// 全局中间件
 	r.Use(middlewares.Middleware{}.Middleware1, middlewares.Middleware{}.Middleware2)
-
 	routers.ApiRouters(r)
 	routers.AdminRouters(r)
 	routers.HomeRouters(r)
 	routers.UploadRouters(r)
+	routers.UserRouters(r)
 
-	r.Run() // r.Run(":8000") 默认端口:8080
+	r.Run(":8090") // 默认端口:8080
 }

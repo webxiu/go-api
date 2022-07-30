@@ -8,20 +8,29 @@ import (
 
 type BaseGlobalController struct{}
 
-// 成功
-func (con BaseGlobalController) Success(c *gin.Context, data interface{}) {
+// 全局成功
+func (con BaseGlobalController) Success(c *gin.Context, msg string, data ...interface{}) {
 	c.JSON(http.StatusOK, gin.H{
-		"status": 0,
-		"msg":    "成功-全局",
+		"status": 200,
+		"msg":    msg,
 		"data":   data,
 	})
 }
 
-// 失败
-func (con BaseGlobalController) Error(c *gin.Context, data interface{}) {
+// 全局失败
+func (con BaseGlobalController) Error(c *gin.Context, status int, msg string, data ...interface{}) {
 	c.JSON(http.StatusOK, gin.H{
-		"status": 1,
-		"msg":    "失败-全局",
+		"status": status,
+		"msg":    msg,
+		"data":   data,
+	})
+}
+
+// 全局成功与失败
+func (con BaseGlobalController) Result(c *gin.Context, status int, msg string, data ...interface{}) {
+	c.JSON(http.StatusOK, gin.H{
+		"status": status,
+		"msg":    msg,
 		"data":   data,
 	})
 }
